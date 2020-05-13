@@ -9,6 +9,8 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class Manager {
@@ -16,6 +18,7 @@ public class Manager {
     private HashMap<String, String> enData;
     private Set<String> favoriteEnWord;
     private Set<String> favoriteViWord;
+    private ArrayList<WordHistory> wordHistories;
     BufferedReader bufferedReader = new BufferedReader(
             new InputStreamReader(System.in, "utf8"));
     private int mode = 1;   // 1: en-vi
@@ -25,6 +28,7 @@ public class Manager {
         this.enData = new HashMap<>();
         this.favoriteEnWord = new TreeSet<>();
         this.favoriteViWord = new TreeSet<>();
+        this.wordHistories = new ArrayList<>();
     }
 
     public void loadXmlData(int type) {
@@ -99,6 +103,29 @@ public class Manager {
         printStream.close();
     }
 
+    public void loadHistoryData() throws IOException {
+        BufferedReader inputFile = new BufferedReader(
+                new InputStreamReader(
+                        new FileInputStream("./src/data/history.txt"), StandardCharsets.UTF_8
+                )
+        );
+        String line;
+        wordHistories.clear();
+        while ((line = inputFile.readLine()) != null) {
+            String[] splitedLine = line.split(",");
+            wordHistories.add(new WordHistory(splitedLine[0], Long.parseLong(splitedLine[1])));
+        }
+    }
+
+    public void saveHistoryData() throws IOException {
+        PrintStream printStream = new PrintStream(new FileOutputStream("./src/data/history.txt"));
+        for(WordHistory item : this.wordHistories) {
+            printStream.println(item.getWord() + "," + item.getAtDate());
+        }
+        printStream.flush();
+        printStream.close();
+    }
+
     public void showFavData(TreeSet<String> data, int typeShow) {
         if(typeShow == 1) { // asc
             for(String word : data) {
@@ -120,15 +147,54 @@ public class Manager {
         System.out.println("\t 4. Xóa từ điển");
         System.out.println("\t 5. Thêm từ điển vào danh sách yêu thích");
         System.out.println("\t 6. Xem danh sách yêu thích");
-        System.out.println("\t 6. Thống kê tần suất");
+        System.out.println("\t 7. Thống kê tần suất tra các từ");
         System.out.println("\t 0. Thoát chương trình");
     }
 
-    public void runProgram() throws IOException {
+    private static void findDuplicatesAndRender(ArrayList<WordHistory> inputArray) {
+        HashMap<String, Integer> map = new HashMap<>();
+        for (WordHistory element : inputArray) {
+            if(map.get(element.getWord()) == null) {
+                map.put(element.getWord(), 1);
+            }
+            else {
+                map.put(element.getWord(), map.get(element.getWord())+1);
+            }
+        }
+
+        Set<Map.Entry<String, Integer>> entrySet = map.entrySet();
+
+        if(map.size() == 0) {
+            System.out.println("Không có lịch sử tra từ vào lúc này");
+        } else {
+            for (Map.Entry<String, Integer> entry : entrySet) {
+                System.out.println("Từ: "+entry.getKey()+" - đã tra "+entry.getValue()+" lần.");
+
+            }
+        }
+
+    }
+
+    private ArrayList<WordHistory> findHistoryByDate(String dateStartStr, String dateEndStr, ArrayList<WordHistory> list) throws ParseException {
+        ArrayList<WordHistory> results = new ArrayList<>();
+        Date dateStart = new SimpleDateFormat("dd-MM-yyyy").parse(dateStartStr);
+        Date dateEnd = new SimpleDateFormat("dd-MM-yyyy").parse(dateEndStr);
+        for (WordHistory recentWord : list) {
+            Date wordDate = new Date(recentWord.getAtDate());
+            if (wordDate.before(dateEnd) && wordDate.after(dateStart)) {
+                results.add(recentWord);
+            }
+        }
+        return results;
+    }
+
+    public void runProgram() throws IOException, ParseException {
         loadXmlData(0);
         loadXmlData(1);
+        // load
         loadFavData(0);
         loadFavData(1);
+        loadHistoryData();
         do {
             showMenu();
             String modeName = (this.mode == 1)? "en - vi": "vi - en";
@@ -161,6 +227,8 @@ public class Manager {
                     } else {
                         System.out.println("Kết quả: " + result);
                     }
+                    this.wordHistories.add(new WordHistory(valueInput, (new Date()).getTime()));
+                    saveHistoryData();
                     System.out.println("Enter de ve menu");
                     String done2 = bufferedReader.readLine();
                     break;
@@ -222,15 +290,20 @@ public class Manager {
                     String done6 = bufferedReader.readLine();
                     break;
                 case 7:
-
+                    System.out.println("---------- Thống kê từ đã tra ------------");
+                    System.out.println("Nhập ngày bắt đầu (dd-mm-yyyy): ");
+                    String dateStartInput = bufferedReader.readLine();
+                    System.out.println("Nhập ngày kết thúc (dd-mm-yyyy): ");
+                    String dateEndInput = bufferedReader.readLine();
+                    System.out.println("Lịch sử tra từ: " + dateStartInput + " đến " + dateEndInput);
+                    findDuplicatesAndRender(findHistoryByDate(dateStartInput, dateEndInput, this.wordHistories));
+                    System.out.println("Enter de ve menu");
+                    String done7 = bufferedReader.readLine();
                     break;
                 default:
+                    saveHistoryData();
                     return;
             }
         } while (true);
-    }
-    public void displayData() {
-//        System.out.println(viData);
-        System.out.println(enData.get("1 to 1 relationship"));
     }
 }

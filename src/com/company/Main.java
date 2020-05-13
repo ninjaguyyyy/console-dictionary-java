@@ -3,10 +3,11 @@ package com.company;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
+import java.text.ParseException;
 
 public class Main {
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, ParseException {
 	    Manager manager = new Manager();
 	    manager.runProgram();
     }
