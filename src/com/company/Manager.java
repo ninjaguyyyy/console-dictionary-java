@@ -7,14 +7,17 @@ import org.w3c.dom.NodeList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.File;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
 public class Manager {
     private HashMap<String, String> viData;
     private HashMap<String, String> enData;
-
-    public Manager() {
+    BufferedReader bufferedReader = new BufferedReader(
+            new InputStreamReader(System.in, "utf8"));
+    private int mode = 1;
+    public Manager() throws UnsupportedEncodingException {
         this.viData = new HashMap<>();
         this.enData = new HashMap<>();
     }
@@ -53,6 +56,69 @@ public class Manager {
         }
     }
 
+    public void showMenu() {
+        System.out.println("==================== DICTIONARY CONSOLE ===================");
+        System.out.println("\t 1. Chuyển đổi ngôn ngữ");
+        System.out.println("\t 2. Tra cứu từ");
+        System.out.println("\t 0. Thoát chương trình");
+
+    }
+
+    public void runProgram() throws IOException {
+        loadXmlData(0);
+        loadXmlData(1);
+        do {
+            showMenu();
+            String modeName = (this.mode == 1)? "en - vi": "vi - en";
+            System.out.println("---------- " + modeName + " ------------");
+            System.out.print("Nhập lựa chọn: ");
+            String chosenStr = bufferedReader.readLine();
+            int chosenInt = Integer.parseInt(chosenStr);
+
+            switch (chosenInt) {
+                case 1:
+                    System.out.println("---------- " + modeName + " ------------");
+                    System.out.println("1. Anh - Việt");
+                    System.out.println("2. Việt - Anh");
+                    System.out.print("Nhập lựa chọn: ");
+                    String chooseModeStr = bufferedReader.readLine();
+                    this.mode = Integer.parseInt(chooseModeStr);
+                    break;
+                case 2:
+                    System.out.println("---------- Tra từ " + modeName + " ------------");
+                    System.out.print("Nhập từ cần tra: ");
+                    String valueInput = bufferedReader.readLine();
+                    String result;
+                    if(this.mode == 1) {
+                         result = enData.get(valueInput);
+                    } else {
+                        result = viData.get(valueInput);
+                    }
+                    if(result == null) {
+                        System.out.println("Kết quả: Không tìm thấy");
+                    } else {
+                        System.out.println("Kết quả: " + result);
+                    }
+                    System.out.println("Enter de ve menu");
+                    String done2 = bufferedReader.readLine();
+                    break;
+                case 3:
+                    System.out.println("Da xoa thanh cong. Enter de ve menu");
+                    String done3 = bufferedReader.readLine();
+                    break;
+                case 4:
+                    break;
+                case 5:
+                    break;
+                case 6:
+                    System.out.println("Da export file thanh cong. Enter de ve menu");
+                    String done5 = bufferedReader.readLine();
+                    break;
+                default:
+                    return;
+            }
+        } while (true);
+    }
     public void displayData() {
 //        System.out.println(viData);
         System.out.println(enData.get("1 to 1 relationship"));

@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="DictionaryConsole:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/DictionaryConsole_jar</output-path>
+    <root id="archive" name="DictionaryConsole.jar">
+      <element id="module-output" name="DictionaryConsole" />
+    </root>
+  </artifact>
+</component>
