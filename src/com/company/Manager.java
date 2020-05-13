@@ -16,7 +16,7 @@ public class Manager {
     private HashMap<String, String> enData;
     BufferedReader bufferedReader = new BufferedReader(
             new InputStreamReader(System.in, "utf8"));
-    private int mode = 1;
+    private int mode = 1;   // 1: en-vi
     public Manager() throws UnsupportedEncodingException {
         this.viData = new HashMap<>();
         this.enData = new HashMap<>();
@@ -60,6 +60,7 @@ public class Manager {
         System.out.println("==================== DICTIONARY CONSOLE ===================");
         System.out.println("\t 1. Chuyển đổi ngôn ngữ");
         System.out.println("\t 2. Tra cứu từ");
+        System.out.println("\t 3. Thêm từ điển");
         System.out.println("\t 0. Thoát chương trình");
 
     }
@@ -103,10 +104,30 @@ public class Manager {
                     String done2 = bufferedReader.readLine();
                     break;
                 case 3:
-                    System.out.println("Da xoa thanh cong. Enter de ve menu");
+                    System.out.println("---------- Thêm từ " + modeName + " ------------");
+                    System.out.print("Nhập từ muốn thêm: ");
+                    String wordInput = bufferedReader.readLine();
+                    System.out.print("Nhập nghĩa của từ: ");
+                    String meaningInput = bufferedReader.readLine();
+                    if(this.mode == 1) {
+                        enData.put(wordInput, meaningInput);
+                    } else {
+                        viData.put(wordInput, meaningInput);
+                    }
+                    System.out.println("Đã thêm thành công. Enter de ve menu");
                     String done3 = bufferedReader.readLine();
                     break;
                 case 4:
+                    System.out.println("---------- Xóa từ " + modeName + " ------------");
+                    System.out.print("Nhập từ muốn xóa: ");
+                    String wordDelInput = bufferedReader.readLine();
+                    if(this.mode == 1) {
+                        enData.remove(wordDelInput);
+                    } else {
+                        viData.remove(wordDelInput);
+                    }
+                    System.out.println("Đã xóa thành công. Enter để về menu");
+                    String done4 = bufferedReader.readLine();
                     break;
                 case 5:
                     break;
