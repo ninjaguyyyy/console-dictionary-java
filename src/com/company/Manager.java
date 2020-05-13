@@ -9,21 +9,22 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
+import java.util.*;
 
 public class Manager {
     private HashMap<String, String> viData;
     private HashMap<String, String> enData;
-    private HashMap<String, String> favoriteEnWord;
-    private HashMap<String, String> favoriteViWord;
+    private Set<String> favoriteEnWord;
+    private Set<String> favoriteViWord;
     BufferedReader bufferedReader = new BufferedReader(
             new InputStreamReader(System.in, "utf8"));
     private int mode = 1;   // 1: en-vi
+
     public Manager() throws UnsupportedEncodingException {
         this.viData = new HashMap<>();
         this.enData = new HashMap<>();
-        this.favoriteEnWord = new HashMap<>();
-        this.favoriteViWord = new HashMap<>();
+        this.favoriteEnWord = new TreeSet<>();
+        this.favoriteViWord = new TreeSet<>();
     }
 
     public void loadXmlData(int type) {
@@ -60,6 +61,57 @@ public class Manager {
         }
     }
 
+    public void loadFavData(int type) throws IOException {
+        String fileNameInput = (type == 1)? "./src/data/en_vi_favorite.txt": "./src/data/vi_en_favorite.txt";
+        BufferedReader inputFile = new BufferedReader(
+                new InputStreamReader(
+                        new FileInputStream(fileNameInput), StandardCharsets.UTF_8
+                )
+        );
+        String line;
+        if(type == 1) {
+            favoriteEnWord.clear();
+            while ((line = inputFile.readLine()) != null) {
+                favoriteEnWord.add(line);
+            }
+        } else {
+            favoriteViWord.clear();
+            while ((line = inputFile.readLine()) != null) {
+                favoriteViWord.add(line);
+            }
+        }
+    }
+
+    public void saveFavData(int type) throws IOException {
+        String filename = (this.mode == 1)? "./src/data/en_vi_favorite.txt": "./src/data/vi_en_favorite.txt";
+        PrintStream printStream = new PrintStream(new FileOutputStream(filename));
+        if (type == 1) {
+            for(String item : this.favoriteEnWord) {
+                printStream.println(item);
+            }
+
+        } else {
+            for(String item : this.favoriteViWord) {
+                printStream.println(item);
+            }
+        }
+        printStream.flush();
+        printStream.close();
+    }
+
+    public void showFavData(TreeSet<String> data, int typeShow) {
+        if(typeShow == 1) { // asc
+            for(String word : data) {
+                System.out.println(word);
+            }
+        } else {
+            TreeSet<String> dataReserve = (TreeSet<String>) data.descendingSet();
+            for(String word : dataReserve) {
+                System.out.println(word);
+            }
+        }
+    }
+
     public void showMenu() {
         System.out.println("==================== DICTIONARY CONSOLE ===================");
         System.out.println("\t 1. Chuyển đổi ngôn ngữ");
@@ -67,14 +119,16 @@ public class Manager {
         System.out.println("\t 3. Thêm từ điển");
         System.out.println("\t 4. Xóa từ điển");
         System.out.println("\t 5. Thêm từ điển vào danh sách yêu thích");
+        System.out.println("\t 6. Xem danh sách yêu thích");
         System.out.println("\t 6. Thống kê tần suất");
         System.out.println("\t 0. Thoát chương trình");
-
     }
 
     public void runProgram() throws IOException {
         loadXmlData(0);
         loadXmlData(1);
+        loadFavData(0);
+        loadFavData(1);
         do {
             showMenu();
             String modeName = (this.mode == 1)? "en - vi": "vi - en";
@@ -141,33 +195,34 @@ public class Manager {
                     System.out.println("!!! Chú ý: có 2 danh sách yêu thích tương ứng 2 chế độ (vi - en và en - vi) nên hãy chú ý đến chế độ hiện tại để thêm vào danh sách hợp lý.");
                     System.out.print("Nhập từ yêu thích: ");
                     String wordFavInput = bufferedReader.readLine();
-                    String meaningCorresponding;
-                    String filename = (this.mode == 1)? "en_vi_favorite.csv": "vi_en_favorite.csv";
-                    PrintStream printStream = new PrintStream(new FileOutputStream(filename));
-                    if (this.mode == 1) {
-                        meaningCorresponding = enData.get(wordFavInput);
-                        favoriteEnWord.put(wordFavInput, meaningCorresponding);
-                        for(String wordItem: this.favoriteEnWord.keySet()) {
-                            printStream.println(wordItem);
-                        }
+                    if(this.mode == 1) {
+                        this.favoriteEnWord.add(wordFavInput);
+                        saveFavData(1);
                     } else {
-                        meaningCorresponding = viData.get(wordFavInput);
-                        favoriteViWord.put(wordFavInput, meaningCorresponding);
-                        for(String wordItem: this.favoriteViWord.keySet()) {
-                            printStream.println(wordItem);
-                        }
+                        this.favoriteViWord.add(wordFavInput);
+                        saveFavData(0);
                     }
-
-
-
-                    printStream.flush();
-                    printStream.close();
                     System.out.println("Đã thêm vào danh sách yêu thích thành công. Enter để về menu");
                     String done5 = bufferedReader.readLine();
                     break;
                 case 6:
+                    System.out.println("---------- Xem danh sách yêu thích " + modeName + " ------------");
+                    System.out.println("!!! Chú ý: có 2 danh sách yêu thích tương ứng 2 chế độ (vi - en và en - vi) nên hãy chú ý đến chế độ hiện tại để thêm vào danh sách hợp lý.");
+                    System.out.println("1. Sắp xếp từ A-Z");
+                    System.out.println("2. Sắp xếp từ Z-A");
+                    System.out.print("Nhập lựa chọn: ");
+                    String chooseModeSort = bufferedReader.readLine();
+                    if(this.mode == 1) {
+                        showFavData((TreeSet<String>)this.favoriteEnWord, Integer.parseInt(chooseModeSort));
+                    }
+                    else {
+                        showFavData((TreeSet<String>)this.favoriteViWord, Integer.parseInt(chooseModeSort));
+                    }
                     System.out.println("Da export file thanh cong. Enter de ve menu");
                     String done6 = bufferedReader.readLine();
+                    break;
+                case 7:
+
                     break;
                 default:
                     return;
