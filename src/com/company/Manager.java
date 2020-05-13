@@ -14,12 +14,16 @@ import java.util.HashMap;
 public class Manager {
     private HashMap<String, String> viData;
     private HashMap<String, String> enData;
+    private HashMap<String, String> favoriteEnWord;
+    private HashMap<String, String> favoriteViWord;
     BufferedReader bufferedReader = new BufferedReader(
             new InputStreamReader(System.in, "utf8"));
     private int mode = 1;   // 1: en-vi
     public Manager() throws UnsupportedEncodingException {
         this.viData = new HashMap<>();
         this.enData = new HashMap<>();
+        this.favoriteEnWord = new HashMap<>();
+        this.favoriteViWord = new HashMap<>();
     }
 
     public void loadXmlData(int type) {
@@ -61,6 +65,9 @@ public class Manager {
         System.out.println("\t 1. Chuyển đổi ngôn ngữ");
         System.out.println("\t 2. Tra cứu từ");
         System.out.println("\t 3. Thêm từ điển");
+        System.out.println("\t 4. Xóa từ điển");
+        System.out.println("\t 5. Thêm từ điển vào danh sách yêu thích");
+        System.out.println("\t 6. Thống kê tần suất");
         System.out.println("\t 0. Thoát chương trình");
 
     }
@@ -130,10 +137,37 @@ public class Manager {
                     String done4 = bufferedReader.readLine();
                     break;
                 case 5:
+                    System.out.println("---------- Thêm từ vào danh sách yêu thích " + modeName + " ------------");
+                    System.out.println("!!! Chú ý: có 2 danh sách yêu thích tương ứng 2 chế độ (vi - en và en - vi) nên hãy chú ý đến chế độ hiện tại để thêm vào danh sách hợp lý.");
+                    System.out.print("Nhập từ yêu thích: ");
+                    String wordFavInput = bufferedReader.readLine();
+                    String meaningCorresponding;
+                    String filename = (this.mode == 1)? "en_vi_favorite.csv": "vi_en_favorite.csv";
+                    PrintStream printStream = new PrintStream(new FileOutputStream(filename));
+                    if (this.mode == 1) {
+                        meaningCorresponding = enData.get(wordFavInput);
+                        favoriteEnWord.put(wordFavInput, meaningCorresponding);
+                        for(String wordItem: this.favoriteEnWord.keySet()) {
+                            printStream.println(wordItem);
+                        }
+                    } else {
+                        meaningCorresponding = viData.get(wordFavInput);
+                        favoriteViWord.put(wordFavInput, meaningCorresponding);
+                        for(String wordItem: this.favoriteViWord.keySet()) {
+                            printStream.println(wordItem);
+                        }
+                    }
+
+
+
+                    printStream.flush();
+                    printStream.close();
+                    System.out.println("Đã thêm vào danh sách yêu thích thành công. Enter để về menu");
+                    String done5 = bufferedReader.readLine();
                     break;
                 case 6:
                     System.out.println("Da export file thanh cong. Enter de ve menu");
-                    String done5 = bufferedReader.readLine();
+                    String done6 = bufferedReader.readLine();
                     break;
                 default:
                     return;
